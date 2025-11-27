@@ -9,9 +9,8 @@ import { Suspense } from "react"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.app",
+  title: "Health Tracker - Build Better Habits",
+  description: "Track your daily habits, build streaks, and achieve your goals. A modern habit tracking app designed to help you transform your life one habit at a time.",
 }
 
 export default function RootLayout({
