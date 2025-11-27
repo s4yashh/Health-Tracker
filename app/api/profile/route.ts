@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/auth"
 import { z } from "zod"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 const updateProfileSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters").optional(),
   bio: z.string().max(500, "Bio must be less than 500 characters").optional(),

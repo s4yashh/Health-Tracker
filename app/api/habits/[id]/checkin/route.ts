@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/auth"
 import { z } from "zod"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 const checkinSchema = z.object({
   notes: z.string().optional(),
 })

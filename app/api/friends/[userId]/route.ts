@@ -2,6 +2,9 @@ import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/auth"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 // DELETE /api/friends/[userId] - Unfollow a user
 export async function DELETE(request: NextRequest, { params }: { params: { userId: string } }) {
   try {

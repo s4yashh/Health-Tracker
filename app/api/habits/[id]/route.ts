@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/auth"
 import { z } from "zod"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 const updateHabitSchema = z.object({
   name: z.string().min(1, "Habit name is required").max(100, "Habit name too long").optional(),
   category: z.enum(["health", "study", "personal", "work"]).optional(),
