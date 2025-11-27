@@ -156,6 +156,8 @@ export async function POST(request: NextRequest) {
     return response
   } catch (error) {
     console.error("Signup error:", error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error("Error details:", errorMessage)
 
     // Handle validation errors
     if (error instanceof z.ZodError) {
@@ -164,9 +166,17 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // Handle specific error messages
+    if (errorMessage.includes('Database') || errorMessage.includes('timeout') || errorMessage.includes('connection')) {
+      return NextResponse.json({
+        error: "Database connection failed. Please try again later."
+      }, { status: 503 })
+    }
+
     // Handle other errors
     return NextResponse.json({
-      error: "Registration failed. Please try again later."
+      error: errorMessage || "Registration failed. Please try again later."
     }, { status: 500 })
   }
 }
+
