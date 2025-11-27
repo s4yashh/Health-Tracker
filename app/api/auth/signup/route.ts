@@ -36,6 +36,23 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Starting signup process...')
     
+    // Diagnostic logging for environment and Prisma
+    console.log('Environment check:', {
+      nodeEnv: process.env.NODE_ENV,
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      databaseUrlLength: process.env.DATABASE_URL?.length,
+      hasJwtSecret: !!process.env.JWT_SECRET,
+      hasJwtExpiresIn: !!process.env.JWT_EXPIRES_IN,
+    })
+    
+    if (!process.env.DATABASE_URL) {
+      console.error('CRITICAL: DATABASE_URL environment variable is not set!')
+      return NextResponse.json({
+        error: "Server configuration error: DATABASE_URL not set",
+        debug: process.env.NODE_ENV === "production" ? undefined : { env: 'DATABASE_URL missing' }
+      }, { status: 500 })
+    }
+    
     // Parse and validate request body
     const body = await request.json()
     console.log('Received signup request:', { ...body, password: '[REDACTED]' })

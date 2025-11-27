@@ -15,6 +15,22 @@ const loginSchema = z.object({
 export async function POST(request: NextRequest) {
   console.log("Login request received")
   
+  // Diagnostic logging for environment and Prisma
+  console.log('Environment check:', {
+    nodeEnv: process.env.NODE_ENV,
+    hasDatabaseUrl: !!process.env.DATABASE_URL,
+    databaseUrlLength: process.env.DATABASE_URL?.length,
+    hasJwtSecret: !!process.env.JWT_SECRET,
+  })
+  
+  if (!process.env.DATABASE_URL) {
+    console.error('CRITICAL: DATABASE_URL environment variable is not set!')
+    return NextResponse.json({
+      error: "Server configuration error: DATABASE_URL not set",
+      debug: process.env.NODE_ENV === "production" ? undefined : { env: 'DATABASE_URL missing' }
+    }, { status: 500 })
+  }
+  
   try {
     // Parse request body
     const body = await request.json()
