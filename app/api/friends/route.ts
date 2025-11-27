@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/auth"
 import { z } from "zod"
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+
 const followSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
 })

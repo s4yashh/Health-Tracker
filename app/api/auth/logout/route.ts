@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-// Force Node.js runtime
+// Force Node.js runtime and dynamic rendering
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   console.log("Logging out user...")

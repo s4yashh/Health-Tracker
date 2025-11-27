@@ -3,8 +3,9 @@ import { prisma } from "@/lib/prisma"
 import { hashPassword, generateToken, setAuthCookie } from "@/lib/auth"
 import { z } from "zod"
 
-// Force Node.js runtime
+// Force Node.js runtime and dynamic rendering
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 // Validation schema for signup request
 const signupSchema = z.object({
