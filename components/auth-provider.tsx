@@ -89,7 +89,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Initial auth check on mount
   useEffect(() => {
-    checkAuth(false) // Don't redirect on initial load
+    let timeout: NodeJS.Timeout
+    
+    const performCheck = async () => {
+      await checkAuth(false) // Don't redirect on initial load
+    }
+    
+    // Set a timeout to prevent infinite loading (10 seconds)
+    timeout = setTimeout(() => {
+      console.warn("AuthProvider: Auth check timeout, proceeding without user")
+      setLoading(false)
+      setInitialized(true)
+    }, 10000)
+    
+    performCheck().finally(() => clearTimeout(timeout))
+    
+    return () => clearTimeout(timeout)
   }, [])
 
   const login = async (email: string, password: string) => {
