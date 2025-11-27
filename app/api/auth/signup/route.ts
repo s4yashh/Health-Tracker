@@ -44,51 +44,86 @@ export async function POST(request: NextRequest) {
     const { email, password, username } = validatedData
     console.log('Validation passed for:', { email, username })
 
-    // Check for existing user
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: { equals: email, mode: "insensitive" } },
-          { username: { equals: username, mode: "insensitive" } },
-        ],
-      },
-    })
+    // Check for existing user with timeout
+    console.log('Checking for existing user...')
+    let existingUser
+    try {
+      existingUser = await Promise.race([
+        prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: { equals: email, mode: "insensitive" } },
+              { username: { equals: username, mode: "insensitive" } },
+            ],
+          },
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database query timeout')), 15000)
+        )
+      ])
+    } catch (dbError) {
+      console.error('Database error during user lookup:', dbError)
+      throw new Error('Database connection failed. Please try again later.')
+    }
 
-    if (existingUser) {
+    if (existingUser && typeof existingUser === 'object' && 'email' in existingUser) {
+      const user = existingUser as { email: string }
       return NextResponse.json({
-        error: existingUser.email.toLowerCase() === email.toLowerCase()
+        error: user.email.toLowerCase() === email.toLowerCase()
           ? "Email already registered"
           : "Username already taken"
       }, { status: 400 })
     }
 
     // Create new user with hashed password
+    console.log('Hashing password...')
     const hashedPassword = await hashPassword(password)
-    const newUser = await prisma.user.create({
-      data: {
-        email,
-        username,
-        password: hashedPassword,
-      },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        bio: true,
-        avatar: true,
-        createdAt: true,
-      },
-    })
+    
+    console.log('Creating user in database...')
+    let newUser
+    try {
+      newUser = await Promise.race([
+        prisma.user.create({
+          data: {
+            email,
+            username,
+            password: hashedPassword,
+          },
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            bio: true,
+            avatar: true,
+            createdAt: true,
+          },
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database query timeout')), 15000)
+        )
+      ])
+    } catch (dbError) {
+      console.error('Database error during user creation:', dbError)
+      throw new Error('Failed to create user. Please try again later.')
+    }
+
+    // Validate newUser
+    if (!newUser || typeof newUser !== 'object' || !('id' in newUser)) {
+      console.error('Invalid user object created')
+      throw new Error('Failed to create user properly')
+    }
+
+    const user = newUser as { id: string; email: string; username: string; bio?: string; avatar?: string; createdAt: string }
 
     // Generate authentication token
     console.log("Generating JWT token...")
-    const token = await generateToken(newUser.id)
+    const token = await generateToken(user.id)
     console.log("Token generated, length:", token.length)
 
     // Create response with user data
     const response = NextResponse.json({
       success: true,
-      user: newUser,
+      user: user,
       message: "Registration successful"
     }, { status: 201 })
 
